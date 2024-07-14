@@ -61,10 +61,10 @@ const char* vs = R"(
 
     layout (location = 0) in vec3 pos;
 
-    uniform mat4 projection
+    uniform mat4 projection;
 
     void main() {
-        gl_Position =  projection * vec4(pos.x, pos.y, pos.z, 1.0);
+        gl_Position =  projection * vec4(pos, 1.0);
     }
 
 )";
@@ -107,14 +107,12 @@ int main() {
         return -1;
     }
 
-    
-
     GLuint shaderProgram = createShaderProgram(vs, fs);
 
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f
+        0.0f, 0.0f, 0.0f,
+        100.0f, 0.0f, 0.0f,
+        50.0f,  100.0f, 0.0f
     };
 
     unsigned int VBO;
@@ -143,6 +141,9 @@ int main() {
         glUseProgram(shaderProgram);
 
         projection = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -10.0f, 10.0f);
+
+        int projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+        glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
         glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
