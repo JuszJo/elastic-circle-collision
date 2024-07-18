@@ -113,19 +113,21 @@ void legacyLineDraw(float x, float y, float length, GLuint shaderProgram) {
     //     x * length,  y, 0.0f
     // };
 
+    float lineHeight = 1.0f;
+
     float lx = 200.0f;
     float ly = 200.0f;
 
     float fx = lx + x * (lx + length - lx);
     float fy = ly + y * (ly + length - ly);
 
-    std::cout << "fx: " << fx << " fy: " << fy << "\n";
+    // std::cout << "fx: " << fx << " fy: " << fy << "\n";
 
     float vertices[] = {
         lx, ly, 0.0f,
         fx, fy, 0.0f,
-        lx, ly + 1.0f, 0.0f,
-        fx, fy, 0.0f
+        lx, ly + lineHeight, 0.0f,
+        fx, fy + lineHeight, 0.0f
     };
     // float vertices[] = {
     //     100.0f, 100.0f, 0.0f,
@@ -175,8 +177,10 @@ struct Circle {
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
     glm::vec3 position;
+    glm::vec3 velocity;
     glm::mat4 model;
     GLuint VAO, VBO, EBO;
+    float mass;
 };
 
 void genCircleVertices(Circle* circle) {
@@ -227,7 +231,10 @@ Circle createCircle(float radius, float vertexCount) {
     Circle circle = {radius, vertexCount, vertices1, indices1};
 
     circle.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    circle.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
     circle.model = glm::mat4(1.0f);
+
+    circle.mass = 1.0f;
 
     genCircleVertices(&circle);
 
@@ -236,6 +243,10 @@ Circle createCircle(float radius, float vertexCount) {
 
 void setPosition(Circle* circle, glm::vec3 newPosition) {
     circle->position = newPosition;
+}
+
+void setVelocity(Circle* circle, glm::vec3 newVelocity) {
+    circle->velocity = newVelocity;
 }
 
 void applyTransform(Circle* circle) {
@@ -249,7 +260,10 @@ void resetTransform(Circle* circle) {
 void moveCircle(Circle* circle, float speedX) {
     if(stopMovement == true) return;
     // circle->position.x = position.x + speedX;
-    setPosition(circle, glm::vec3(circle->position.x + speedX, circle->position.y, circle->position.z));
+    // setPosition(circle, glm::vec3(circle->position.x + speedX, circle->position.y, circle->position.z));
+    glm::vec3 newPosition = circle->position + circle->velocity;
+
+    setPosition(circle, newPosition);
 }
 
 bool circlesCollide(float x1, float y1, float rad1, float x2, float y2, float rad2) {
@@ -271,9 +285,13 @@ void circleCollision(Circle* circle1, Circle* circle2) {
     float x1 = circle1->position.x;
     float y1 = circle1->position.y;
     float rad1 = circle1->radius;
+    float c1m = circle1->mass;
+    glm::vec3 v1 = circle1->velocity;
     float x2 = circle2->position.x;
     float y2 = circle2->position.y;
     float rad2 = circle2->radius;
+    float c2m = circle2->mass;
+    glm::vec3 v2 = circle2->velocity;
 
 
     if(circlesCollide(x1, y1, rad1, x2, y2, rad2)) {
@@ -292,6 +310,21 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         linesCount = 1;
         linesX = nx;
         linesY = ny;
+
+        float dvx = v2.x - v1.x;
+        float dvy = v2.y - v1.y;
+        float dot_product = dvx * nx + dvy * ny;
+
+        // std::cout << "dp: " << dot_product << "\n";
+
+        // 2 * (m1 * m3) * dp
+        // -------------------
+        // (m1 * m2) * distane
+
+        float impulse = (2.0 * (c1m * c2m) * dot_product) / ((c1m + c2m) * distance);
+        std::cout << impulse << " impulse \n";
+
+
 
         // Calculate relative velocity in the normal direction
         // float dvx = c2->vx - c1->vx;
@@ -351,6 +384,7 @@ int main() {
 
     Circle circle = createCircle(50, 120);
     setPosition(&circle, glm::vec3(50.0f, 290.0f, 0.0f));
+    setVelocity(&circle, glm::vec3(1.0f, 0.0f, 0.0f));
     applyTransform(&circle);
 
     genGLAttributes(&circle);
