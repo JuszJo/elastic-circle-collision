@@ -82,41 +82,42 @@ const char* fs = R"(
 
 )";
 
+struct Circle {
+    float radius;
+    float vCount;
+    std::vector<glm::vec3> vertices;
+    std::vector<unsigned int> indices;
+};
+
+void genCircleVertices(Circle* circle) {
+    float angle = 360.0f / circle->vCount;
+
+    int triangleCount = circle->vCount - 2;
+
+    std::vector<glm::vec3> temp;
+    // positions
+    for (int i = 0; i < circle->vCount; i++) {
+        float currentAngle = angle * i;
+        float x = circle->radius * cos(glm::radians(currentAngle));
+        float y = circle->radius * sin(glm::radians(currentAngle));
+        float z = 0.0f;
+
+        circle->vertices.push_back(glm::vec3(x, y, z));
+    }
+
+    // push indexes of each triangle points
+    for (int i = 0; i < triangleCount; i++) {
+        circle->indices.push_back(0);
+        circle->indices.push_back(i + 1);
+        circle->indices.push_back(i + 2);
+    }
+}
+
 // Function to compile shaders
 unsigned int compileShader(unsigned int type, const char* source);
 
 // Function to create shader program
 unsigned int createShaderProgram(const char* vertexSource, const char* fragmentSource);
-
-std::vector<glm::vec3> circleVertices;
-
-std::vector<unsigned int> circleIndices;
-
-void buildCircle(float radius, int vCount) {
-    float angle = 360.0f / vCount;
-
-    int triangleCount = vCount - 2;
-
-    std::vector<glm::vec3> temp;
-    // positions
-    for (int i = 0; i < vCount; i++)
-    {
-        float currentAngle = angle * i;
-        float x = radius * cos(glm::radians(currentAngle));
-        float y = radius * sin(glm::radians(currentAngle));
-        float z = 0.0f;
-
-        circleVertices.push_back(glm::vec3(x, y, z));
-    }
-
-    // push indexes of each triangle points
-    for (int i = 0; i < triangleCount; i++)
-    {
-        circleIndices.push_back(0);
-        circleIndices.push_back(i + 1);
-        circleIndices.push_back(i + 2);
-    }
-}
 
 int main() {
     GLFWwindow* window;
@@ -147,13 +148,22 @@ int main() {
     //     50.0f,  100.0f, 0.0f
     // };
 
-    buildCircle(100, 120);
+    // buildCircle(100, 120);
+
+    std::vector<glm::vec3> vertices1;
+    std::vector<unsigned int> indices1;
+
+    Circle circle = {100, 120, vertices1, indices1};
+
+    genCircleVertices(&circle);
+
+    std::cout << circle.indices.size() << "\n";
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * circleVertices.size(), &circleVertices[0], GL_STATIC_DRAW); // FOR CIRCLE
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * circle.vertices.size(), &circle.vertices[0], GL_STATIC_DRAW); // FOR CIRCLE
 
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
@@ -164,7 +174,7 @@ int main() {
     unsigned int EBO;
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * circleIndices.size(), &circleIndices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * circle.indices.size(), &circle.indices[0], GL_STATIC_DRAW);
 
 
     glUseProgram(shaderProgram);
@@ -194,7 +204,7 @@ int main() {
 
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, circleIndices.size(), GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, circle.indices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
 
