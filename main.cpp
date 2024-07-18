@@ -301,7 +301,7 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         float nx = dx / distance;  // normalized x-component of the normal vector
         float ny = dy / distance;  // normalized y-component of the normal vector
 
-        // std::cout << nx << " " << ny << "\n";
+        std::cout << nx << " " << ny << "\n";
         linesCount = 1;
         linesX = nx;
         linesY = ny;
