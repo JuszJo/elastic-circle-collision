@@ -463,17 +463,36 @@ int main() {
 
     std::vector<Circle> circles;
 
-    Circle circle = createCircle(50, 120);
-    setPosition(&circle, glm::vec3(50.0f, 300.0f, 0.0f));
-    setVelocity(&circle, glm::vec3(4.0f, 0.0f, 0.0f));
+    float circlesRadii = 20.0f;
+
+    std::vector<glm::vec3> positions = {
+        glm::vec3(50.0f, 300.0f, 0.0f),
+        glm::vec3(120.0f, 400.0f, 0.0f),
+        glm::vec3(540.0f, 270.0f, 0.0f),
+        glm::vec3(200.0f, 400.0f, 0.0f),
+        glm::vec3(400.0f, 330.0f, 0.0f),
+        glm::vec3(90.0f, 200.0f, 0.0f),
+        glm::vec3(190.0f, 150.0f, 0.0f),
+        glm::vec3(320.0f, 240.0f, 0.0f),
+        glm::vec3(420.0f, 140.0f, 0.0f),
+        glm::vec3(520.0f, 90.0f, 0.0f)
+    };
 
 
-    Circle circle2 = createCircle(50, 120);
-    setPosition(&circle2, glm::vec3(320.0f, 240.0f, 0.0f));
-    // setVelocity(&circle2, glm::vec3(0.1f, 0.0f, 0.0f));
+    for(int i = 0; i < positions.size(); ++i) {
+        Circle circle = createCircle(circlesRadii, 120);
 
-    circles.push_back(circle);
-    circles.push_back(circle2);
+        circles.push_back(circle);
+    }
+
+    int i = 0;
+    for(auto& circle : circles) {
+        setPosition(&circle, positions[i]);
+
+        ++i;
+    }
+
+    setVelocity(&circles[0], glm::vec3(10.0f, 0.0f, 0.0f));
 
     glUseProgram(shaderProgram);
 
@@ -499,15 +518,14 @@ int main() {
             moveCircle(&circle, 1.0f);
 
             wallCircleCollision(&circle);
-
-            circleCollision(circles);
-
-            applyTransform(&circle);
         }
+
+        circleCollision(circles);
 
         // RENDER
         for (Circle& circle : circles) {
             // std::cout << circle.position.x << "\n";
+            applyTransform(&circle);
             int modelLocation = glGetUniformLocation(shaderProgram, "model");
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(circle.model));
 
