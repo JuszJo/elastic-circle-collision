@@ -436,7 +436,7 @@ int main() {
     if (!glfwInit())
         return -1;
 
-    window = glfwCreateWindow(screenWidth, screenHeight, "GLM Ortho Projection Example", NULL, NULL);
+    window = glfwCreateWindow(screenWidth, screenHeight, "Elastic Circle Collisions", NULL, NULL);
     if (!window) {
         glfwTerminate();
         return -1;
@@ -463,7 +463,7 @@ int main() {
 
     Circle circle = createCircle(50, 120);
     setPosition(&circle, glm::vec3(50.0f, 300.0f, 0.0f));
-    setVelocity(&circle, glm::vec3(1.0f, 0.0f, 0.0f));
+    setVelocity(&circle, glm::vec3(4.0f, 0.0f, 0.0f));
     applyTransform(&circle);
 
     genGLAttributes(&circle);
