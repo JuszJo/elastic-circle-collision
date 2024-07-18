@@ -87,6 +87,8 @@ struct Circle {
     float vCount;
     std::vector<glm::vec3> vertices;
     std::vector<unsigned int> indices;
+    glm::vec3 position;
+    glm::mat4 model;
 };
 
 void genCircleVertices(Circle* circle) {
@@ -119,9 +121,20 @@ Circle createCircle(float radius, float vertexCount) {
 
     Circle circle = {radius, vertexCount, vertices1, indices1};
 
+    circle.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    circle.model = glm::mat4(1.0f);
+
     genCircleVertices(&circle);
 
     return circle;
+}
+
+void setPosition(Circle* circle, glm::vec3 newPosition) {
+    circle->position = newPosition;
+}
+
+void applyTransform(Circle* circle) {
+    circle->model = glm::translate(circle->model, circle->position);
 }
 
 // Function to compile shaders
@@ -161,6 +174,10 @@ int main() {
 
     Circle circle = createCircle(100, 120);
 
+    setPosition(&circle, glm::vec3(320.0f, 240.0f, 0.0f));
+
+    applyTransform(&circle);
+
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -182,9 +199,6 @@ int main() {
     glUseProgram(shaderProgram);
 
     glm::mat4 projection = glm::mat4(1.0f);
-    glm::mat4 model = glm::mat4(1.0f);
-
-    model = glm::translate(model, glm::vec3(320.0f, 240.0f, 0.0f));
 
     while (!glfwWindowShouldClose(window)) {
         glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
@@ -202,7 +216,7 @@ int main() {
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
         int modelLocation = glGetUniformLocation(shaderProgram, "model");
-        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(circle.model));
 
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
