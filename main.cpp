@@ -274,7 +274,7 @@ bool circlesCollide(float x1, float y1, float rad1, float x2, float y2, float ra
     float distance = std::sqrt((dx * dx + dy * dy));
 
     // Check if the distance is less than or equal to the sum of the radii
-    if (distance <= rad1 + rad2) {
+    if (distance < rad1 + rad2) {
         return true; // Collision detected
     } else {
         return false; // No collision
@@ -295,16 +295,35 @@ void circleCollision(Circle* circle1, Circle* circle2) {
 
 
     if(circlesCollide(x1, y1, rad1, x2, y2, rad2)) {
-        // std::cout << "collide\n";
+        std::cout << "collide\n";
         if(stopMovement == true) return;
 
-        stopMovement = true;
+        // stopMovement = true;
+        // circle1->velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+        // circle2->velocity = glm::vec3(0.0f, 0.0f, 0.0f);
 
         float dx = x2 - x1;
         float dy = y2 - y1;
         float distance = std::sqrt((dx * dx + dy * dy));
         float nx = dx / distance;  // normalized x-component of the normal vector
         float ny = dy / distance;  // normalized y-component of the normal vector
+
+        float overlap = rad1 + rad2 - distance;
+
+        /* std::cout << "old1: " << circle1->position.x << " " << circle1->position.y << "\n";
+        std::cout << "old2: " << circle2->position.x << " " << circle2->position.y << "\n"; */
+
+        glm::vec3 deltaP = glm::vec3((overlap * 0.5) * nx, (overlap * 0.5) * ny, 0.0f);
+
+        setPosition(circle1, (circle1->position - deltaP));
+        setPosition(circle2, (circle2->position + deltaP));
+
+        /* std::cout << "new1: " << circle1->position.x << " " << circle1->position.y << "\n";
+        std::cout << "new2: " << circle2->position.x << " " << circle2->position.y << "\n"; */
+
+        distance = rad1 + rad2;
+
+        std::cout << "overlap: " << overlap << "\n";
 
         // std::cout << nx << " " << ny << "\n";
         linesCount = 1;
@@ -321,8 +340,22 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         // -------------------
         // (m1 * m2) * distane
 
-        float impulse = (2.0 * (c1m * c2m) * dot_product) / ((c1m + c2m) * distance);
-        std::cout << impulse << " impulse \n";
+        float impulse = (2.0f * (c1m * c2m) * dot_product) / ((c1m + c2m) * distance);
+        // std::cout << impulse << " impulse \n";
+
+        circle1->velocity.x += impulse * nx / c1m;
+        circle1->velocity.y += impulse * ny / c1m;
+
+        // circle1->velocity.x *= 100.0f;
+        // circle1->velocity.y *= 100.0f;
+
+        circle2->velocity.x -= impulse * nx / c2m;
+        circle2->velocity.y -= impulse * ny / c2m;
+
+        // circle2->velocity.x *= 5.0f;
+        // circle2->velocity.y *= 5.0f;
+
+        // std::cout << "x: " << circle1->velocity.x << " y: " << circle1->velocity.y << "\n";
 
 
 
@@ -392,6 +425,7 @@ int main() {
 
     Circle circle2 = createCircle(50, 120);
     setPosition(&circle2, glm::vec3(320.0f, 240.0f, 0.0f));
+    // setVelocity(&circle2, glm::vec3(-1.0f, 0.0f, 0.0f));
     applyTransform(&circle2);
 
     genGLAttributes(&circle2);
@@ -432,6 +466,7 @@ int main() {
         }
 
         moveCircle(&circles[0], 1.0f);
+        moveCircle(&circles[1], 1.0f);
 
         circleCollision(&circles[0], &circles[1]);
 
