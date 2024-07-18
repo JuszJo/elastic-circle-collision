@@ -82,6 +82,8 @@ const char* fs = R"(
 
 )";
 
+bool stopMovement = false;
+
 void wallCircleCollision(float x, float y, float radius) {
     float wallx1 = 0.0f;
     float wallx2 = 640.0f;
@@ -104,6 +106,97 @@ void wallCircleCollision(float x, float y, float radius) {
 
     }
 
+}
+
+struct Line {
+    float length;
+    float vertices[12];
+    glm::vec3 position;
+    glm::mat4 model;
+};
+
+std::vector<Line>lines;
+
+Line createLine(float length) {
+    float vertices[] = {
+        0.0f, 0.0f, 0.0f,
+        length, 0.0f, 0.0f,
+        0.0f,  1.0f, 0.0f,
+        length,  1.0f, 0.0f
+    };
+
+    Line line = {length};
+
+    // std::cout << sizeof(line.vertices) << "\n";
+    // std::cout << sizeof(line.vertices) / sizeof(float) << "\n";
+
+    for(int i = 0; i < (sizeof(line.vertices) / sizeof(float)); ++i) {
+        line.vertices[i] = vertices[i];
+    }
+    
+    line.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    line.model = glm::mat4(1.0f);
+
+    return line;
+}
+
+void setLinePosition(Line* line, glm::vec3 newPosition) {
+    line->position = newPosition;
+}
+
+int linesCount = 0;
+float linesX = 0.0f;
+float linesY = 0.0f;
+
+void legacyLineDraw(float x, float y, float length, GLuint shaderProgram) {
+    glm::mat4 projection = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+
+    // float vertices[] = {
+    //     x, y, 0.0f,
+    //     x * length, y, 0.0f,
+    //     x, y, 0.0f,
+    //     x * length,  y, 0.0f
+    // };
+    float vertices[] = {
+        100.0f, 100.0f, 0.0f,
+        100.0f + length, (100.0f * x), 0.0f,
+        100.0f, 101.0f, 0.0f,
+        100.0f + length, ((100.0f * x) + 1.0f), 0.0f
+    };
+
+    GLuint VAO, VBO;
+    int stride = 3;
+    int offset = 0;
+
+    glGenVertexArrays(1, &VAO);
+    glGenBuffers(1, &VBO);
+
+    glBindVertexArray(VAO);
+
+    int verticeSize = sizeof(vertices);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBufferData(GL_ARRAY_BUFFER, verticeSize, vertices, GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride * sizeof(float), offset == 0 ? nullptr : (void*)(offset * sizeof(float)));
+    glEnableVertexAttribArray(0);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
+
+    projection = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -10.0f, 10.0f);
+
+    int projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+    glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
+
+    int modelLocation = glGetUniformLocation(shaderProgram, "model");
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+
+    glBindVertexArray(VAO);
+    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+    glDeleteBuffers(1, &VBO);
+    glDeleteVertexArrays(1, &VAO);
 }
 
 
@@ -167,6 +260,7 @@ void resetTransform(Circle* circle) {
 }
 
 void moveCircle(Circle* circle, float speedX) {
+    if(stopMovement == true) return;
     // circle->position.x = position.x + speedX;
     setPosition(circle, glm::vec3(circle->position.x + speedX, circle->position.y, circle->position.z));
 }
@@ -196,7 +290,22 @@ void circleCollision(Circle* circle1, Circle* circle2) {
 
 
     if(circlesCollide(x1, y1, rad1, x2, y2, rad2)) {
-        std::cout << "collide\n";
+        // std::cout << "collide\n";
+        if(stopMovement == true) return;
+
+        stopMovement = true;
+
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float distance = std::sqrt((dx * dx + dy * dy));
+        float nx = dx / distance;  // normalized x-component of the normal vector
+        float ny = dy / distance;  // normalized y-component of the normal vector
+
+        // std::cout << nx << " " << ny << "\n";
+        linesCount = 1;
+        linesX = nx;
+        linesY = ny;
+        
     }
 }
 
@@ -229,6 +338,8 @@ int main() {
 
     GLuint shaderProgram = createShaderProgram(vs, fs);
 
+    Line line = createLine(10.0f);
+
     // float vertices[] = {
     //     0.0f, 0.0f, 0.0f,
     //     100.0f, 0.0f, 0.0f,
@@ -238,7 +349,7 @@ int main() {
     std::vector<Circle> circles;
 
     Circle circle = createCircle(50, 120);
-    setPosition(&circle, glm::vec3(50.0f, 240.0f, 0.0f));
+    setPosition(&circle, glm::vec3(50.0f, 290.0f, 0.0f));
     applyTransform(&circle);
 
     unsigned int VBO;
@@ -259,7 +370,7 @@ int main() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * circle.indices.size(), &circle.indices[0], GL_STATIC_DRAW);
 
     Circle circle2 = createCircle(50, 120);
-    setPosition(&circle2, glm::vec3(520.0f, 240.0f, 0.0f));
+    setPosition(&circle2, glm::vec3(320.0f, 240.0f, 0.0f));
     applyTransform(&circle2);
 
     unsigned int VBO2;
@@ -309,8 +420,6 @@ int main() {
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawElements(GL_TRIANGLES, circle.indices.size(), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(VAO2);
-        glDrawElements(GL_TRIANGLES, circle2.indices.size(), GL_UNSIGNED_INT, 0);
 
         moveCircle(&circle, 1.0f);
 
@@ -324,6 +433,12 @@ int main() {
         resetTransform(&circle2);
 
         circleCollision(&circle, &circle2);
+
+        if(linesCount > 0) {
+            // legacyLineDraw(0.5f, 0.8660f, 100.0f, shaderProgram);
+            legacyLineDraw(linesX, linesY, 100.0f, shaderProgram);
+        }
+
 
         glfwSwapBuffers(window);
 
