@@ -206,10 +206,10 @@ int main() {
     //     50.0f,  100.0f, 0.0f
     // };
 
-    Circle circle = createCircle(100, 120);
+    std::vector<Circle> circles;
 
-    setPosition(&circle, glm::vec3(320.0f, 240.0f, 0.0f));
-
+    Circle circle = createCircle(50, 120);
+    setPosition(&circle, glm::vec3(50.0f, 240.0f, 0.0f));
     applyTransform(&circle);
 
     unsigned int VBO;
@@ -229,6 +229,29 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * circle.indices.size(), &circle.indices[0], GL_STATIC_DRAW);
 
+    Circle circle2 = createCircle(50, 120);
+    setPosition(&circle2, glm::vec3(520.0f, 240.0f, 0.0f));
+    applyTransform(&circle2);
+
+    unsigned int VBO2;
+    glGenBuffers(1, &VBO2);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * circle2.vertices.size(), &circle2.vertices[0], GL_STATIC_DRAW); // FOR CIRCLE
+
+    unsigned int VAO2;
+    glGenVertexArrays(1, &VAO2);
+    glBindVertexArray(VAO2);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    unsigned int EBO2;
+    glGenBuffers(1, &EBO2);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * circle2.indices.size(), &circle2.indices[0], GL_STATIC_DRAW);
+
+    circles.push_back(circle);
+    circles.push_back(circle2);
 
     glUseProgram(shaderProgram);
 
@@ -246,6 +269,7 @@ int main() {
 
         projection = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -10.0f, 10.0f);
         applyTransform(&circle);
+        applyTransform(&circle2);
 
         int projectionLocation = glGetUniformLocation(shaderProgram, "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
@@ -256,10 +280,19 @@ int main() {
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawElements(GL_TRIANGLES, circle.indices.size(), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_TRIANGLES, circle2.indices.size(), GL_UNSIGNED_INT, 0);
 
         moveCircle(&circle, 1.0f);
 
         resetTransform(&circle);
+
+        int modelLocation2 = glGetUniformLocation(shaderProgram, "model");
+        glUniformMatrix4fv(modelLocation2, 1, GL_FALSE, glm::value_ptr(circle2.model));
+        glBindVertexArray(VAO2);
+        glDrawElements(GL_TRIANGLES, circle2.indices.size(), GL_UNSIGNED_INT, 0);
+
+        resetTransform(&circle2);
 
         glfwSwapBuffers(window);
 
