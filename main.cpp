@@ -82,6 +82,31 @@ const char* fs = R"(
 
 )";
 
+void wallCircleCollision(float x, float y, float radius) {
+    float wallx1 = 0.0f;
+    float wallx2 = 640.0f;
+    float wally1 = 0.0f;
+    float wally2 = 480.0f;
+
+    if(x - radius < wallx1) {
+        
+    }
+
+    if(x + radius > wallx2) {
+
+    }
+
+    if(y - radius < wally1) {
+
+    }
+
+    if(y + radius > wally2) {
+
+    }
+
+    
+}
+
 struct Circle {
     float radius;
     float vCount;
@@ -137,11 +162,20 @@ void applyTransform(Circle* circle) {
     circle->model = glm::translate(circle->model, circle->position);
 }
 
+void resetTransform(Circle* circle) {
+    circle->model = glm::mat4(1.0f);
+}
+
 // Function to compile shaders
 unsigned int compileShader(unsigned int type, const char* source);
 
 // Function to create shader program
 unsigned int createShaderProgram(const char* vertexSource, const char* fragmentSource);
+
+void moveCircle(Circle* circle, float speedX) {
+    // circle->position.x = position.x + speedX;
+    setPosition(circle, glm::vec3(circle->position.x + speedX, circle->position.y, circle->position.z));
+}
 
 int main() {
     GLFWwindow* window;
@@ -211,6 +245,7 @@ int main() {
         glUseProgram(shaderProgram);
 
         projection = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -10.0f, 10.0f);
+        applyTransform(&circle);
 
         int projectionLocation = glGetUniformLocation(shaderProgram, "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
@@ -221,6 +256,10 @@ int main() {
         glBindVertexArray(VAO);
         // glDrawArrays(GL_TRIANGLES, 0, 3);
         glDrawElements(GL_TRIANGLES, circle.indices.size(), GL_UNSIGNED_INT, 0);
+
+        moveCircle(&circle, 1.0f);
+
+        resetTransform(&circle);
 
         glfwSwapBuffers(window);
 
