@@ -104,8 +104,8 @@ void wallCircleCollision(float x, float y, float radius) {
 
     }
 
-    
 }
+
 
 struct Circle {
     float radius;
@@ -166,16 +166,45 @@ void resetTransform(Circle* circle) {
     circle->model = glm::mat4(1.0f);
 }
 
+void moveCircle(Circle* circle, float speedX) {
+    // circle->position.x = position.x + speedX;
+    setPosition(circle, glm::vec3(circle->position.x + speedX, circle->position.y, circle->position.z));
+}
+
+bool circlesCollide(float x1, float y1, float rad1, float x2, float y2, float rad2) {
+    // Calculate distance between centers of the circles
+    float dx = x1 - x2;
+    float dy = y1 - y2;
+
+    float distance = std::sqrt((dx * dx + dy * dy));
+
+    // Check if the distance is less than or equal to the sum of the radii
+    if (distance <= rad1 + rad2) {
+        return true; // Collision detected
+    } else {
+        return false; // No collision
+    }
+}
+
+void circleCollision(Circle* circle1, Circle* circle2) {
+    float x1 = circle1->position.x;
+    float y1 = circle1->position.y;
+    float rad1 = circle1->radius;
+    float x2 = circle2->position.x;
+    float y2 = circle2->position.y;
+    float rad2 = circle2->radius;
+
+
+    if(circlesCollide(x1, y1, rad1, x2, y2, rad2)) {
+        std::cout << "collide\n";
+    }
+}
+
 // Function to compile shaders
 unsigned int compileShader(unsigned int type, const char* source);
 
 // Function to create shader program
 unsigned int createShaderProgram(const char* vertexSource, const char* fragmentSource);
-
-void moveCircle(Circle* circle, float speedX) {
-    // circle->position.x = position.x + speedX;
-    setPosition(circle, glm::vec3(circle->position.x + speedX, circle->position.y, circle->position.z));
-}
 
 int main() {
     GLFWwindow* window;
@@ -293,6 +322,8 @@ int main() {
         glDrawElements(GL_TRIANGLES, circle2.indices.size(), GL_UNSIGNED_INT, 0);
 
         resetTransform(&circle2);
+
+        circleCollision(&circle, &circle2);
 
         glfwSwapBuffers(window);
 
