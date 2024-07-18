@@ -5,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <cmath>
 #include <iostream>
+#include <vector>
 
 // glm::mat4 projection;
 int screenWidth = 640;
@@ -62,9 +63,10 @@ const char* vs = R"(
     layout (location = 0) in vec3 pos;
 
     uniform mat4 projection;
+    uniform mat4 model;
 
     void main() {
-        gl_Position =  projection * vec4(pos, 1.0);
+        gl_Position =  projection * model * vec4(pos, 1.0);
     }
 
 )";
@@ -85,6 +87,36 @@ unsigned int compileShader(unsigned int type, const char* source);
 
 // Function to create shader program
 unsigned int createShaderProgram(const char* vertexSource, const char* fragmentSource);
+
+std::vector<glm::vec3> circleVertices;
+
+std::vector<unsigned int> circleIndices;
+
+void buildCircle(float radius, int vCount) {
+    float angle = 360.0f / vCount;
+
+    int triangleCount = vCount - 2;
+
+    std::vector<glm::vec3> temp;
+    // positions
+    for (int i = 0; i < vCount; i++)
+    {
+        float currentAngle = angle * i;
+        float x = radius * cos(glm::radians(currentAngle));
+        float y = radius * sin(glm::radians(currentAngle));
+        float z = 0.0f;
+
+        circleVertices.push_back(glm::vec3(x, y, z));
+    }
+
+    // push indexes of each triangle points
+    for (int i = 0; i < triangleCount; i++)
+    {
+        circleIndices.push_back(0);
+        circleIndices.push_back(i + 1);
+        circleIndices.push_back(i + 2);
+    }
+}
 
 int main() {
     GLFWwindow* window;
@@ -109,16 +141,19 @@ int main() {
 
     GLuint shaderProgram = createShaderProgram(vs, fs);
 
-    float vertices[] = {
-        0.0f, 0.0f, 0.0f,
-        100.0f, 0.0f, 0.0f,
-        50.0f,  100.0f, 0.0f
-    };
+    // float vertices[] = {
+    //     0.0f, 0.0f, 0.0f,
+    //     100.0f, 0.0f, 0.0f,
+    //     50.0f,  100.0f, 0.0f
+    // };
+
+    buildCircle(100, 120);
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * circleVertices.size(), &circleVertices[0], GL_STATIC_DRAW); // FOR CIRCLE
 
     unsigned int VAO;
     glGenVertexArrays(1, &VAO);
@@ -126,9 +161,18 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * circleIndices.size(), &circleIndices[0], GL_STATIC_DRAW);
+
+
     glUseProgram(shaderProgram);
 
     glm::mat4 projection = glm::mat4(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+
+    model = glm::translate(model, glm::vec3(320.0f, 240.0f, 0.0f));
 
     while (!glfwWindowShouldClose(window)) {
         glfwGetFramebufferSize(window, &screenWidth, &screenHeight);
@@ -145,8 +189,12 @@ int main() {
         int projectionLocation = glGetUniformLocation(shaderProgram, "projection");
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, glm::value_ptr(projection));
 
+        int modelLocation = glGetUniformLocation(shaderProgram, "model");
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(model));
+
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawElements(GL_TRIANGLES, circleIndices.size(), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
 
