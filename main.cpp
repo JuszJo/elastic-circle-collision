@@ -113,6 +113,17 @@ void genCircleVertices(Circle* circle) {
     }
 }
 
+Circle createCircle(float radius, float vertexCount) {
+    std::vector<glm::vec3> vertices1;
+    std::vector<unsigned int> indices1;
+
+    Circle circle = {radius, vertexCount, vertices1, indices1};
+
+    genCircleVertices(&circle);
+
+    return circle;
+}
+
 // Function to compile shaders
 unsigned int compileShader(unsigned int type, const char* source);
 
@@ -148,16 +159,7 @@ int main() {
     //     50.0f,  100.0f, 0.0f
     // };
 
-    // buildCircle(100, 120);
-
-    std::vector<glm::vec3> vertices1;
-    std::vector<unsigned int> indices1;
-
-    Circle circle = {100, 120, vertices1, indices1};
-
-    genCircleVertices(&circle);
-
-    std::cout << circle.indices.size() << "\n";
+    Circle circle = createCircle(100, 120);
 
     unsigned int VBO;
     glGenBuffers(1, &VBO);
