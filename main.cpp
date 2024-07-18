@@ -158,12 +158,27 @@ void legacyLineDraw(float x, float y, float length, GLuint shaderProgram) {
     //     x, y, 0.0f,
     //     x * length,  y, 0.0f
     // };
+
+    float lx = 200.0f;
+    float ly = 200.0f;
+
+    float fx = lx + x * (lx + length - lx);
+    float fy = ly + y * (ly + length - ly);
+
+    std::cout << "fx: " << fx << " fy: " << fy << "\n";
+
     float vertices[] = {
-        100.0f, 100.0f, 0.0f,
-        100.0f + length, (100.0f * x), 0.0f,
-        100.0f, 101.0f, 0.0f,
-        100.0f + length, ((100.0f * x) + 1.0f), 0.0f
+        lx, ly, 0.0f,
+        fx, fy, 0.0f,
+        lx, ly + 1.0f, 0.0f,
+        fx, fy, 0.0f
     };
+    // float vertices[] = {
+    //     100.0f, 100.0f, 0.0f,
+    //     (100.0f + length * x), (100.0f * y), 0.0f,
+    //     100.0f, 101.0f, 0.0f,
+    //     (100.0f + length * x), ((100.0f * y) + 1.0f), 0.0f
+    // };
 
     GLuint VAO, VBO;
     int stride = 3;
