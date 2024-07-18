@@ -102,6 +102,9 @@ int linesCount = 0;
 float linesX = 0.0f;
 float linesY = 0.0f;
 
+float lines2X = 0.0f;
+float lines2Y = 0.0f;
+
 void legacyLineDraw(float x, float y, float length, GLuint shaderProgram) {
     glm::mat4 projection = glm::mat4(1.0f);
     glm::mat4 model = glm::mat4(1.0f);
@@ -329,10 +332,28 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         linesCount = 1;
         linesX = nx;
         linesY = ny;
+        lines2X = ny * -1.0f;
+        lines2Y = nx;
 
         float dvx = v2.x - v1.x;
         float dvy = v2.y - v1.y;
         float dot_product = dvx * nx + dvy * ny;
+
+        float p = (2.0f * (v1.x * nx + v1.y * ny - v2.x * nx - v2.y * ny)) / (c1m + c2m);
+
+        float w1x = v1.x - p * (c1m * nx);
+        float w1y = v1.y - p * (c1m * ny);
+
+        float w2x = v2.x + p * (c2m * nx);
+        float w2y = v2.y + p * (c2m * ny);
+
+        circle1->velocity.x = w1x;
+        circle1->velocity.y = w1y;
+
+        circle2->velocity.x = w2x;
+        circle2->velocity.y = w2y;
+
+        // std::cout << "wx: " << wx << " wy: " << wy << "\n";
 
         // 2 * (m1 * m3) * dp
         // -------------------
@@ -341,11 +362,11 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         float impulse = (2.0f * (c1m * c2m) * dot_product) / ((c1m + c2m) * distance);
         // std::cout << impulse << " impulse \n";
 
-        circle1->velocity.x += impulse * nx / c1m;
+        /* circle1->velocity.x += impulse * nx / c1m;
         circle1->velocity.y += impulse * ny / c1m;
 
         circle2->velocity.x -= impulse * nx / c2m;
-        circle2->velocity.y -= impulse * ny / c2m;
+        circle2->velocity.y -= impulse * ny / c2m; */
 
         // std::cout << "x: " << circle1->velocity.x << " y: " << circle1->velocity.y << "\n";
 
@@ -415,7 +436,7 @@ int main() {
 
     Circle circle2 = createCircle(50, 120);
     setPosition(&circle2, glm::vec3(320.0f, 240.0f, 0.0f));
-    setVelocity(&circle2, glm::vec3(0.1f, 0.0f, 0.0f));
+    // setVelocity(&circle2, glm::vec3(0.1f, 0.0f, 0.0f));
     applyTransform(&circle2);
 
     genGLAttributes(&circle2);
@@ -463,6 +484,7 @@ int main() {
         if(linesCount > 0) {
             // legacyLineDraw(0.5f, 0.8660f, 100.0f, shaderProgram);
             legacyLineDraw(linesX, linesY, 100.0f, shaderProgram);
+            legacyLineDraw(lines2X, lines2Y, 100.0f, shaderProgram);
         }
 
 
