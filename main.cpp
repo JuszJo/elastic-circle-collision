@@ -321,7 +321,7 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         /* std::cout << "new1: " << circle1->position.x << " " << circle1->position.y << "\n";
         std::cout << "new2: " << circle2->position.x << " " << circle2->position.y << "\n"; */
 
-        distance = rad1 + rad2;
+        // distance = rad1 + rad2;
 
         std::cout << "overlap: " << overlap << "\n";
 
@@ -334,8 +334,6 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         float dvy = v2.y - v1.y;
         float dot_product = dvx * nx + dvy * ny;
 
-        // std::cout << "dp: " << dot_product << "\n";
-
         // 2 * (m1 * m3) * dp
         // -------------------
         // (m1 * m2) * distane
@@ -346,32 +344,24 @@ void circleCollision(Circle* circle1, Circle* circle2) {
         circle1->velocity.x += impulse * nx / c1m;
         circle1->velocity.y += impulse * ny / c1m;
 
-        // circle1->velocity.x *= 100.0f;
-        // circle1->velocity.y *= 100.0f;
-
         circle2->velocity.x -= impulse * nx / c2m;
         circle2->velocity.y -= impulse * ny / c2m;
 
-        // circle2->velocity.x *= 5.0f;
-        // circle2->velocity.y *= 5.0f;
-
         // std::cout << "x: " << circle1->velocity.x << " y: " << circle1->velocity.y << "\n";
 
+        /* //Calculate relative velocity in the normal direction
+        float dvx = c2->vx - c1->vx;
+        float dvy = c2->vy - c1->vy;
+        float dot_product = dvx * nx + dvy * ny;
 
+        // Calculate the impulse (change in momentum)
+        float impulse = (2.0 * (c1->mass * c2->mass) * dot_product) / ((c1->mass + c2->mass) * distance);
 
-        // Calculate relative velocity in the normal direction
-        // float dvx = c2->vx - c1->vx;
-        // float dvy = c2->vy - c1->vy;
-        // float dot_product = dvx * nx + dvy * ny;
-
-        // // Calculate the impulse (change in momentum)
-        // float impulse = (2.0 * (c1->mass * c2->mass) * dot_product) / ((c1->mass + c2->mass) * distance);
-
-        // // Update velocities
-        // c1->vx += impulse * nx / c1->mass;
-        // c1->vy += impulse * ny / c1->mass;
-        // c2->vx -= impulse * nx / c2->mass;
-        // c2->vy -= impulse * ny / c2->mass;
+        // Update velocities
+        c1->vx += impulse * nx / c1->mass;
+        c1->vy += impulse * ny / c1->mass;
+        c2->vx -= impulse * nx / c2->mass;
+        c2->vy -= impulse * ny / c2->mass; */
         
     }
 }
@@ -425,7 +415,7 @@ int main() {
 
     Circle circle2 = createCircle(50, 120);
     setPosition(&circle2, glm::vec3(320.0f, 240.0f, 0.0f));
-    // setVelocity(&circle2, glm::vec3(-1.0f, 0.0f, 0.0f));
+    setVelocity(&circle2, glm::vec3(0.1f, 0.0f, 0.0f));
     applyTransform(&circle2);
 
     genGLAttributes(&circle2);
