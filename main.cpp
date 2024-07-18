@@ -217,6 +217,8 @@ Circle createCircle(float radius, float vertexCount) {
 
     genCircleVertices(&circle);
 
+    genGLAttributes(&circle);
+
     return circle;
 }
 
@@ -464,17 +466,11 @@ int main() {
     Circle circle = createCircle(50, 120);
     setPosition(&circle, glm::vec3(50.0f, 300.0f, 0.0f));
     setVelocity(&circle, glm::vec3(4.0f, 0.0f, 0.0f));
-    applyTransform(&circle);
-
-    genGLAttributes(&circle);
 
 
     Circle circle2 = createCircle(50, 120);
     setPosition(&circle2, glm::vec3(320.0f, 240.0f, 0.0f));
     // setVelocity(&circle2, glm::vec3(0.1f, 0.0f, 0.0f));
-    applyTransform(&circle2);
-
-    genGLAttributes(&circle2);
 
     circles.push_back(circle);
     circles.push_back(circle2);
