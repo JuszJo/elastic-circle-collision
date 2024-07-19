@@ -8,10 +8,11 @@
 #include <vector>
 #include <random>
 
-float randomFloat() {
+float random(float lb, float ub) {
     static std::random_device rd;
     static std::mt19937 gen(rd());
-    static std::uniform_real_distribution<float> dist(0.0f, std::nextafter(1.0f, FLT_MAX));
+
+    std::uniform_real_distribution<float> dist(lb, std::nextafter(ub, FLT_MAX));
 
     float rand = dist(gen);
 
@@ -305,7 +306,7 @@ void circleCollision(std::vector<Circle>& circles) {
             glm::vec3 v2 = circle2->velocity;
 
             if(circlesCollide(x1, y1, rad1, x2, y2, rad2)) {
-                std::cout << "collide\n";
+                // std::cout << "collide\n";
 
                 float dx = x2 - x1;
                 float dy = y2 - y1;
@@ -533,7 +534,27 @@ int main() {
 
     float circlesRadii = 20.0f;
 
-    std::vector<glm::vec3> positions = {
+    int positionCount = 10;
+
+    std::vector<glm::vec3> positions;
+
+    float xLowerBound = circlesRadii;
+    float xUpperBound = screenWidth - circlesRadii;
+
+    float yLowerBound = circlesRadii;
+    float yUpperBound = screenHeight - circlesRadii;
+
+    for(int i = 0; i < positionCount; ++i) {
+        float x = random(xLowerBound, xUpperBound);
+        float y = random(yLowerBound, yUpperBound);
+        float z = 0.0f;
+
+        // std::cout << x << "\n";
+        
+        positions.push_back(glm::vec3(x, y, z));
+    }
+
+    /* std::vector<glm::vec3> positions = {
         glm::vec3(50.0f, 300.0f, 0.0f),
         glm::vec3(120.0f, 400.0f, 0.0f),
         glm::vec3(540.0f, 280.0f, 0.0f),
@@ -544,16 +565,16 @@ int main() {
         glm::vec3(320.0f, 240.0f, 0.0f),
         glm::vec3(420.0f, 140.0f, 0.0f),
         glm::vec3(520.0f, 90.0f, 0.0f)
-    };
+    }; */
 
     int colorCount = positions.size();
 
     std::vector<glm::vec3> colors;
 
     for(int i = 0; i < colorCount; ++i) {
-        float r = randomFloat();
-        float g = randomFloat();
-        float b = randomFloat();
+        float r = random(0.0f, 1.0f);
+        float g = random(0.0f, 1.0f);
+        float b = random(0.0f, 1.0f);
 
         colors.push_back(glm::vec3(r, g, b));
     }
@@ -569,10 +590,30 @@ int main() {
         setPosition(&circle, positions[i]);
         setColor(&circle, colors[i]);
 
+        /* float rvx = random(-1.0f, 1.0f);
+        float rvy = random(-1.0f, 1.0f);
+
+        float l = std::sqrt((rvx * rvx) + (rvy * rvy));
+
+        float uvx = rvx / l;
+        float uvy = rvy / l;
+
+        setVelocity(&circle, glm::vec3(uvx, uvy, 0.0f)); */
+
         ++i;
     }
 
-    setVelocity(&circles[0], glm::vec3(10.0f, 0.0f, 0.0f));
+    float rvx = random(-1.0f, 1.0f);
+    float rvy = random(-1.0f, 1.0f);
+
+    float l = std::sqrt((rvx * rvx) + (rvy * rvy));
+
+    float uvx = rvx / l;
+    float uvy = rvy / l;
+
+    float scale = 10.0f;
+
+    setVelocity(&circles[0], glm::vec3(uvx * scale, uvy * scale, 0.0f));
 
     glUseProgram(shaderProgram);
 
