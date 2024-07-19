@@ -128,9 +128,9 @@ struct Circle {
 
 void wallCircleCollision(Circle* circle) {
     float wallx1 = 0.0f;
-    float wallx2 = 640.0f;
+    float wallx2 = screenWidth;
     float wally1 = 0.0f;
-    float wally2 = 480.0f;
+    float wally2 = screenHeight;
 
     float x = circle->position.x;
     float y = circle->position.y;
@@ -319,6 +319,30 @@ void circleCollision(std::vector<Circle>& circles) {
 
                 circle2->velocity.x = w2x;
                 circle2->velocity.y = w2y;
+
+
+                // DONT TOUCH YET
+
+                /* float massSum = c1m + c2m;
+                float num1 = dot_product;
+                float den1 = massSum * dot_product * dot_product;
+                float result = 2.0f * c2m * num1 / den1;
+                float rvx = nx * result;
+                float rvy = ny * result;
+
+                std::cout << rvx << " " << rvy << "\n";
+
+                circle1->velocity.x = rvx;
+                circle1->velocity.y = rvy;
+
+                float result2 = -2.0f * c2m * num1 / den1;
+                float rvx2 = nx * result2;
+                float rvy2 = ny * result2;
+
+                circle2->velocity.x = rvx2;
+                circle2->velocity.y = rvy2; */
+
+
             }
         }
     }
