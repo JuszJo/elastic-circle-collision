@@ -678,7 +678,7 @@ int main() {
             tMag += mag;
         }
 
-        std::cout << "tMag: " << tMag << "\n";
+        // std::cout << "tMag: " << tMag << "\n";
         
 
         if(linesCount > 0) {
