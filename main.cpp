@@ -306,7 +306,7 @@ void circleCollision(std::vector<Circle>& circles) {
                 float dvy = v2.y - v1.y;
                 float dot_product = dvx * nx + dvy * ny;
 
-                float p = (2.0f * (v1.x * nx + v1.y * ny - v2.x * nx - v2.y * ny)) / (c1m + c2m);
+                /* float p = (2.0f * (v1.x * nx + v1.y * ny - v2.x * nx - v2.y * ny)) / (c1m + c2m);
 
                 float w1x = v1.x - p * (c1m * nx);
                 float w1y = v1.y - p * (c1m * ny);
@@ -318,7 +318,27 @@ void circleCollision(std::vector<Circle>& circles) {
                 circle1->velocity.y = w1y;
 
                 circle2->velocity.x = w2x;
-                circle2->velocity.y = w2y;
+                circle2->velocity.y = w2y; */
+
+                // WORKS
+                float tx = ny * -1.0f;
+                float ty = nx;
+
+                float dpTan1 = v1.x * tx + v1.y * ty;
+                float dpTan2 = v2.x * tx + v2.y * ty;
+
+                float dpNorm1 = v1.x * nx + v1.y * ny;
+                float dpNorm2 = v2.x * nx + v2.y * ny;
+
+                float m1 = (dpNorm1 * (c1m - c2m) + 2.0f * c2m * dpNorm2) / (c1m + c2m);
+                float m2 = (dpNorm2 * (c2m - c1m) + 2.0f * c1m * dpNorm1) / (c1m + c2m);
+
+                circle1->velocity.x = tx * dpTan1 + nx * m1;
+                circle1->velocity.y = ty * dpTan1 + ny * m1;
+                circle2->velocity.x = tx * dpTan2 + nx * m2;
+                circle2->velocity.y = ty * dpTan2 + ny * m2;
+
+                // std::cout << tx * dpTan1 << " n: " << nx * m1 << "\n";
 
 
                 // DONT TOUCH YET
@@ -492,7 +512,7 @@ int main() {
     std::vector<glm::vec3> positions = {
         glm::vec3(50.0f, 300.0f, 0.0f),
         glm::vec3(120.0f, 400.0f, 0.0f),
-        glm::vec3(540.0f, 270.0f, 0.0f),
+        glm::vec3(540.0f, 280.0f, 0.0f),
         glm::vec3(200.0f, 400.0f, 0.0f),
         glm::vec3(400.0f, 330.0f, 0.0f),
         glm::vec3(90.0f, 200.0f, 0.0f),
