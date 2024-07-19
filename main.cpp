@@ -321,6 +321,20 @@ void circleCollision(std::vector<Circle>& circles) {
                 setPosition(circle1, (circle1->position - deltaP));
                 setPosition(circle2, (circle2->position + deltaP));
 
+                // CALCULATE AGAIN
+                x1 = circle1->position.x;
+                y1 = circle1->position.y;
+
+                x2 = circle2->position.x;
+                y2 = circle2->position.y;
+
+                dx = x2 - x1;
+                dy = y2 - y1;
+
+                distance = std::sqrt((dx * dx + dy * dy));
+                nx = dx / distance;
+                ny = dy / distance;
+
                 linesCount = 1;
                 linesX = nx;
                 linesY = ny;
