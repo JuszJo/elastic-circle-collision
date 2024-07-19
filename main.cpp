@@ -555,6 +555,11 @@ int main() {
     }
 
     /* std::vector<glm::vec3> positions = {
+        glm::vec3(50.0f, 320.0f, 0.0f),
+        glm::vec3(540.0f, 300.0f, 0.0f),
+    }; */
+
+    /* std::vector<glm::vec3> positions = {
         glm::vec3(50.0f, 300.0f, 0.0f),
         glm::vec3(120.0f, 400.0f, 0.0f),
         glm::vec3(540.0f, 280.0f, 0.0f),
@@ -590,20 +595,22 @@ int main() {
         setPosition(&circle, positions[i]);
         setColor(&circle, colors[i]);
 
-        /* float rvx = random(-1.0f, 1.0f);
+        float rvx = random(-1.0f, 1.0f);
         float rvy = random(-1.0f, 1.0f);
 
         float l = std::sqrt((rvx * rvx) + (rvy * rvy));
 
-        float uvx = rvx / l;
-        float uvy = rvy / l;
+        float mag = 4.0f;
 
-        setVelocity(&circle, glm::vec3(uvx, uvy, 0.0f)); */
+        float uvx = (rvx / l) * mag;
+        float uvy = (rvy / l) * mag;
+
+        setVelocity(&circle, glm::vec3(uvx, uvy, 0.0f));
 
         ++i;
     }
 
-    float rvx = random(-1.0f, 1.0f);
+    /* float rvx = random(-1.0f, 1.0f);
     float rvy = random(-1.0f, 1.0f);
 
     float l = std::sqrt((rvx * rvx) + (rvy * rvy));
@@ -613,7 +620,9 @@ int main() {
 
     float scale = 10.0f;
 
-    setVelocity(&circles[0], glm::vec3(uvx * scale, uvy * scale, 0.0f));
+    setVelocity(&circles[0], glm::vec3(uvx * scale, uvy * scale, 0.0f)); */
+
+    // setVelocity(&circles[0], glm::vec3(10.0f, 0.0f, 0.0f));
 
     glUseProgram(shaderProgram);
 
@@ -659,10 +668,18 @@ int main() {
             resetTransform(&circle);
         }
 
-        // moveCircle(&circles[0], 1.0f);
-        // moveCircle(&circles[1], 1.0f);
+        // CHECK TOTAL VELOCITY
 
-        // circleCollision(&circles[0], &circles[1]);
+        float tMag = 0.0f;
+
+        for (Circle& circle : circles) {
+            float mag = std::sqrt((circle.velocity.x * circle.velocity.x) + (circle.velocity.y * circle.velocity.y));
+
+            tMag += mag;
+        }
+
+        std::cout << "tMag: " << tMag << "\n";
+        
 
         if(linesCount > 0) {
             // legacyLineDraw(0.5f, 0.8660f, 100.0f, shaderProgram);
