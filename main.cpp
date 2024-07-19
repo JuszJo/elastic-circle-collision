@@ -6,6 +6,17 @@
 #include <cmath>
 #include <iostream>
 #include <vector>
+#include <random>
+
+float randomFloat() {
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    static std::uniform_real_distribution<float> dist(0.0f, std::nextafter(1.0f, FLT_MAX));
+
+    float rand = dist(gen);
+
+    return rand;
+}
 
 // glm::mat4 projection;
 int screenWidth = 640;
@@ -19,8 +30,13 @@ const char* vs = R"(
     uniform mat4 projection;
     uniform mat4 model;
 
+    uniform vec3 color;
+
+    out vec3 fragColor;
+
     void main() {
         gl_Position =  projection * model * vec4(pos, 1.0);
+        fragColor = color;
     }
 
 )";
@@ -28,10 +44,12 @@ const char* vs = R"(
 const char* fs = R"(
     #version 330 core
 
+    in vec3 fragColor;
     out vec4 FragColor;
 
     void main() {
-        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        // FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        FragColor = vec4(fragColor, 1.0f);
     }
 
 )";
@@ -121,6 +139,7 @@ struct Circle {
     std::vector<unsigned int> indices;
     glm::vec3 position;
     glm::vec3 velocity;
+    glm::vec3 color;
     glm::mat4 model;
     GLuint VAO, VBO, EBO;
     float mass;
@@ -211,6 +230,7 @@ Circle createCircle(float radius, float vertexCount) {
 
     circle.position = glm::vec3(0.0f, 0.0f, 0.0f);
     circle.velocity = glm::vec3(0.0f, 0.0f, 0.0f);
+    circle.color = glm::vec3(0.0f, 0.0f, 0.0f);
     circle.model = glm::mat4(1.0f);
 
     circle.mass = 1.0f;
@@ -220,6 +240,10 @@ Circle createCircle(float radius, float vertexCount) {
     genGLAttributes(&circle);
 
     return circle;
+}
+
+void setColor(Circle* circle, glm::vec3 newColor) {
+    circle->color = newColor;
 }
 
 void setPosition(Circle* circle, glm::vec3 newPosition) {
@@ -522,6 +546,17 @@ int main() {
         glm::vec3(520.0f, 90.0f, 0.0f)
     };
 
+    int colorCount = positions.size();
+
+    std::vector<glm::vec3> colors;
+
+    for(int i = 0; i < colorCount; ++i) {
+        float r = randomFloat();
+        float g = randomFloat();
+        float b = randomFloat();
+
+        colors.push_back(glm::vec3(r, g, b));
+    }
 
     for(int i = 0; i < positions.size(); ++i) {
         Circle circle = createCircle(circlesRadii, 120);
@@ -532,6 +567,7 @@ int main() {
     int i = 0;
     for(auto& circle : circles) {
         setPosition(&circle, positions[i]);
+        setColor(&circle, colors[i]);
 
         ++i;
     }
@@ -572,6 +608,9 @@ int main() {
             applyTransform(&circle);
             int modelLocation = glGetUniformLocation(shaderProgram, "model");
             glUniformMatrix4fv(modelLocation, 1, GL_FALSE, glm::value_ptr(circle.model));
+
+            int colorLocation = glGetUniformLocation(shaderProgram, "color");
+            glUniform3fv(colorLocation, 1, glm::value_ptr(circle.color));
 
             glBindVertexArray(circle.VAO);
             glDrawElements(GL_TRIANGLES, circle.indices.size(), GL_UNSIGNED_INT, 0);
