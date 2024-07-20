@@ -685,14 +685,20 @@ int main() {
         // CHECK TOTAL VELOCITY
 
         float tMag = 0.0f;
+        float tKe = 0.0f;
 
         for (Circle& circle : circles) {
             float mag = std::sqrt((circle.velocity.x * circle.velocity.x) + (circle.velocity.y * circle.velocity.y));
+
+            float ke = 0.5f * circle.mass * mag * mag;
+
+            tKe += ke;
 
             tMag += mag;
         }
 
         // std::cout << "tMag: " << tMag << "\n";
+        // std::cout << "tKe: " << tKe << "\n";
         
 
         if(linesCount > 0) {
