@@ -345,6 +345,8 @@ void circleCollision(std::vector<Circle>& circles) {
                 float dvy = v2.y - v1.y;
                 float dot_product = dvx * nx + dvy * ny;
 
+                // TODO: FIX CONSERVATION OF MOMENTUM
+
                 /* float p = (2.0f * (v1.x * nx + v1.y * ny - v2.x * nx - v2.y * ny)) / (c1m + c2m);
 
                 float w1x = v1.x - p * (c1m * nx);
